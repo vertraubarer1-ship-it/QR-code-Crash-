@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  @keyframes spin {
+    from { transform: rotate(0deg) scale(1) translateX(0); }
+    to { transform: rotate(360deg) scale(100) translateX(100px); }
+  }
+</style>
+</head>
+<body>
+<script>
+  for(let i = 0; i < 100000; i++) {
+    const d = document.createElement('div');
+    d.style.animation = 'spin 0.001s infinite';
+    d.style.width = '100px';
+    d.style.height = '100px';
+    d.style.background = 'red';
+    document.body.appendChild(d);
+  }
+</script>
+</body>
+</html>
